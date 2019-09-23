@@ -67,13 +67,19 @@ To allow an empty list, use `MAYBE(JOIN(item, separator))`
 
 > note: might add an option to join to allow empty list.
 
-### GROUP(subrule)
+## capturing groups: TEXT, GROUP
 
-capture the contents matched by subrule. If there are no other CATCH expressions
-nested inside of this one, then capture the raw text matched by the subrule.
-If there are nested CATCH expressions, group them into an array.
+### TEXT(subrule, map?)
 
-> note: I might split this into two functions.
+capture the text matched in a subrule.
+map is an optional function that will be applied to a matched group.
+
+### GROUP(subrule, map?)
+
+capture any subgroups into a collection. If there are no subgroups,
+but the subrule matches, an empty array is returned.
+
+the optional map function will be applied to the groups as a whole.
 
 ### RECURSE() => subrule
 
@@ -93,7 +99,6 @@ var list = RECURSE()
 var value = /^\w+/
 list(AND('(', MAYBE(JOIN(OR(value | list), space)), ')'))
 ```
-
 
 ## License
 

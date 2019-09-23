@@ -52,13 +52,9 @@ function OR () {
   }
 }
 
-function MAYBE (a) {
-  return function (input, start) {
-    var m
-    if(m = matches(a, input, start))
-      return m
-    return {length: 0, groups: null}
-  }
+const EMPTY = AND()
+const MAYBE = function (a) {
+  return OR(a, EMPTY)
 }
 
 function MANY (a) {
@@ -72,19 +68,15 @@ function MANY (a) {
   }
 }
 
-exports.OR = OR
-exports.AND = AND
-exports.MAYBE = MAYBE
-exports.MANY = MANY
-exports.MORE = function (a) {
+function MORE (a) {
   return AND(a, MANY(a))
 }
 
-exports.JOIN = function (a, separate) {
+function JOIN (a, separate) {
   return AND(a, MANY(AND(separate, a)))
 }
 
-exports.RECURSE = function () {
+function RECURSE () {
   var rule
   return function recurse (input, start) {
     if(!rule) {
@@ -95,13 +87,31 @@ exports.RECURSE = function () {
   }
 }
 
-exports.CATCH = function (rule) {
+
+function id (e) { return e }
+
+function init (group, map, def) {
+  return [(map || id)(group || def)]
+}
+
+function TEXT (rule, map) {
   return function (input, start) {
     var m
     if(m = matches(rule, input, start)) {
-      if(m.groups) m = {length: m.length, groups: [m.groups]}
-      else m = {length: m.length, groups: input.substring(start, start+m.length)}
-      return m
+      return {length: m.length, groups: init(input.substring(start, start+m.length), map)}
     }
   }
 }
+
+//note, initialize with a double array [[]] because they'll be concatenated
+//so an empty group will remain an empty array.
+function GROUP (rule, map) {
+  return function (input, start) {
+    var m
+    if(m = matches(rule, input, start)) {
+      return {length: m.length, groups: init(m.groups, map, [])}
+    }
+  }
+}
+
+module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE}

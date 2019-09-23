@@ -1,5 +1,5 @@
 var assert = require('assert')
-var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,CATCH}  = require('../')
+var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,TEXT,GROUP}  = require('../')
 
 var aORb = OR(/^a/, /^b/)
 
@@ -41,24 +41,25 @@ assert.equal(abcSPACES('aaa bbb   c',0).length, 11)
 var LIST = RECURSE()
 
 var name = /^\w+/, space = /^\s+/
-LIST(AND('(', CATCH(MAYBE(JOIN(OR(CATCH(name), LIST), space))), ')'))
+LIST(AND('(', GROUP(MAYBE(JOIN(OR(TEXT(name), LIST), space))), ')'))
 
 assert.equal(LIST('(a)', 0).length, 3)
 assert.equal(LIST('((a))', 0).length, 5)
 assert.equal(LIST('((a b c))', 0).length, 9)
 assert.equal(LIST('((()))', 0).length, 6)
 console.log(LIST('(foo (bar baz))', 0).groups)
+assert.deepEqual(LIST('((()))', 0).groups[0], [[[]]])
 
 
 //And(Catch(/^\w+/), '@', Catch(/^\w+\.[a-z]+/))
 
-var EMAIL = AND(CATCH(/^\w+/), '@', CATCH(/^\w+\.[a-z]+/))
+var EMAIL = AND(TEXT(/^\w+/), '@', TEXT(/^\w+\.[a-z]+/))
 
 var email = EMAIL('foo@bar.baz', 0)
 
 assert.deepEqual(email, {length: 11, groups: ['foo', 'bar.baz']})
 
-var CSV = JOIN(CATCH( JOIN(CATCH(/^\w+/), ',') ), '\n')
+var CSV = JOIN(GROUP(JOIN(TEXT(/^\w+/),',')),'\n')
 
 assert.deepEqual(
   CSV('a,b,c\nd,e,f', 0),
