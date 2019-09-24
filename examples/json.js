@@ -1,4 +1,4 @@
-var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,GROUP,TEXT}  = require('../')
+var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,GROUP,TEXT,FAIL}  = require('../')
 
 //white space
 var _ = /^\s*/
@@ -15,8 +15,8 @@ var number = TEXT(AND(decimal, MAYBE(AND('e', decimal))), Number)
 
 //strings, including escaped literals
 function join (ary) { return ary.join('') }
-var escape = AND('\\', TEXT(/^./)), unescaped = TEXT(/^[^"]+/)
-var string = AND('"', GROUP(MANY(OR(escape, unescaped)), join), '"')
+var escape = AND('\\', TEXT(/^./)), unescaped = TEXT(/^[^"\n]+/)
+var string = AND('"', GROUP(MANY(OR(escape, unescaped)), join), OR('"', FAIL('expected "')))
 
 //note, matching unescaped string using "repeated non quote" because
 //it makes it much much faster than matching each individual character
@@ -25,11 +25,11 @@ var string = AND('"', GROUP(MANY(OR(escape, unescaped)), join), '"')
 //objects and arrays.
 var value = RECURSE()
 
-var array = AND('[', _, GROUP(MAYBE(JOIN(AND(_, value, _), ','))),  _, ']')
+var array = AND('[', _, GROUP(MAYBE(JOIN(AND(_, value, _), ','))),  _, OR(']', FAIL('expected ]')))
 
 //parse each key value pair into a two element array, [key, value]
 //then this is passed to toObject in the map for object.
-var keyValue = GROUP(AND( _, string, _, ":", _, value, _ ))
+var keyValue = GROUP(AND( _, string, _, OR(":", FAIL("expected :")), _, value, _ ))
 
 function toObject (ary) {
   var o = {}
@@ -38,10 +38,10 @@ function toObject (ary) {
   return o
 }
 
-var object = AND('{', _, GROUP(MAYBE(JOIN(keyValue, ',' )), toObject), _, '}')
+var object = AND('{', _, GROUP(MAYBE(JOIN(keyValue, ',' )), toObject), _, OR('}', FAIL('expected }')))
 
 //accept any valid json type at the top level.
-value(OR(object, array, string, number, nul, boolean))
+value(OR(object, array, string, number, nul, boolean, FAIL('expected json value')))
 
 module.exports = value
 
