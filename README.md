@@ -83,6 +83,8 @@ but the subrule matches, an empty array is returned.
 
 the optional map function will be applied to the groups as a whole.
 
+## recursion
+
 ### RECURSE() => subrule
 
 return a subrule that may refer to itself. It's necessary to declare the recursive rule
@@ -103,11 +105,23 @@ var value = /^\w+/
 list(AND('(', MAYBE(JOIN(OR(value | list), space)), ')'))
 ```
 
+## errors
+
+### FAIL(message)
+
+create a subrule that never passes, it instead throws an error.
+
+to use, put inside a `OR(expected, FAIL(message))` if expected isn't matched,
+throw an error. Use this once you have enough matched of a given pattern
+that the rest must match now. for example a json object or array must have a closing
+} or ]. Also a object must have a : after the string.
+
 ## examples
 
 ### [JSON](./examples/json.js)
 
-A json parser in 50 lines, including comments.
+A json parser in 50 lines including comments, and uses most stack-expression constructs,
+including GROUP (with map), RECURSE, and FAIL.
 
 ### [lisp](./examples/lisp.js)
 
