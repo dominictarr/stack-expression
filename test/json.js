@@ -1,5 +1,6 @@
 var assert = require('assert')
 var json = require('../examples/json')
+var getError = require('../').getError
 // --------------------
 
 console.log(
@@ -30,3 +31,20 @@ console.log(
 )
 
 assert.deepEqual(parsed, require('../package.json'))
+
+/*
+
+for(var i = 0; i < 10; i++) {
+  var partial = pkg.substring(0, ~~(Math.random()*pkg.length))
+  assert.equal(json(partial, 0), null)
+  console.log(getError())
+  console.log(partial)
+  console.log('------')
+}
+
+  var partial = pkg.substring(0, pkg.length-2)
+  assert.equal(json(partial, 0), null)
+  console.log(getError())
+  console.log(partial)
+  console.log('------')
+*/

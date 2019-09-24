@@ -1,4 +1,4 @@
-var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,CATCH, GROUP, TEXT}  = require('../')
+var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,GROUP,TEXT}  = require('../')
 
 //white space
 var _ = /^\s*/
