@@ -15,7 +15,8 @@ Here is the simplest useful example that you can't do with regular expressions.
 You can't write a CSV parser that groups things into cells and lines.
 csv actually is a [regular language](https://en.wikipedia.org/wiki/Regular_language),
 the limitation here is how capture groups work in regular expressions.
-```
+
+``` js
 var {JOIN,GROUP,TEXT} = require('stack-expression')
 var cell = /^[\w ]*/
 var CSV = JOIN(GROUP( JOIN(TEXT(cell), ',') ), '\n')
@@ -95,7 +96,7 @@ The following is a lisp-like parser, that accepts nested lists of printable
 characters separated by space, surrounded by parens. (the CATCHes have been left out
 for clarity)
 
-```
+``` js
 var {RECURSE,AND,MAYBE,JOIN,OR} = require('stack-expression')
 var list = RECURSE()
 var value = /^\w+/
