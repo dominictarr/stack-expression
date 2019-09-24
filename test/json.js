@@ -40,9 +40,9 @@ for(var i = 0; i < 10; i++) {
   try {
     var v = json(partial, 0)
   } catch (err) {
-    console.log(err)
-    console.log(partial)
-    console.log('------')
+//    console.log(err)
+//    console.log(partial)
+//    console.log('------')
     assert.equal(v, null)
   }
 }
