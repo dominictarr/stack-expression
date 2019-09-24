@@ -32,19 +32,17 @@ console.log(
 
 assert.deepEqual(parsed, require('../package.json'))
 
-/*
-
 for(var i = 0; i < 10; i++) {
-  var partial = pkg.substring(0, ~~(Math.random()*pkg.length))
-  assert.equal(json(partial, 0), null)
-  console.log(getError())
-  console.log(partial)
-  console.log('------')
+  //insert 'X"{]' should break any json object...
+  var r = ~~(Math.random()*pkg.length)
+  var r2 = r + ~~(Math.random()*(pkg.length-r))
+  var partial = pkg.substring(0, r) + 'X"{]' + pkg.substring(r2)
+  try {
+    var v = json(partial, 0)
+  } catch (err) {
+    console.log(err)
+    console.log(partial)
+    console.log('------')
+    assert.equal(v, null)
+  }
 }
-
-  var partial = pkg.substring(0, pkg.length-2)
-  assert.equal(json(partial, 0), null)
-  console.log(getError())
-  console.log(partial)
-  console.log('------')
-*/
