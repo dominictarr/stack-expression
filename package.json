@@ -1,15 +1,13 @@
 {
   "name": "stack-expression",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "homepage": "https://github.com/dominictarr/stack-expression",
   "repository": {
     "type": "git",
     "url": "git://github.com/dominictarr/stack-expression.git"
   },
-  "dependencies": {
-  },
-  "devDependencies": {
-  },
+  "dependencies": {},
+  "devDependencies": {},
   "scripts": {
     "test": "tape test/*.js"
   },
