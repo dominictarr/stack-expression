@@ -1,10 +1,10 @@
 {
-  "name": "parse",
+  "name": "stack-expression",
   "version": "1.0.0",
-  "homepage": "https://github.com/dominictarr/parse",
+  "homepage": "https://github.com/dominictarr/stack-expression",
   "repository": {
     "type": "git",
-    "url": "git://github.com/dominictarr/parse.git"
+    "url": "git://github.com/dominictarr/stack-expression.git"
   },
   "dependencies": {
   },
