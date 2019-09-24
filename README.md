@@ -9,15 +9,16 @@ but the parser it generated was way too slow.
 
 How hard could it really be?
 
-## example: CSV parser (CATCH, JOIN)
+## example: CSV parser (JOIN, GROUP, TEXT)
 
 Here is the simplest useful example that you can't do with regular expressions.
 You can't write a CSV parser that groups things into cells and lines.
 csv actually is a [regular language](https://en.wikipedia.org/wiki/Regular_language),
 the limitation here is how capture groups work in regular expressions.
 ```
+var {JOIN,GROUP,TEXT} = require('stack-expression')
 var cell = /^[\w ]*/
-var CSV = JOIN(CATCH( JOIN(CATCH(cell), ',') ), '\n')
+var CSV = JOIN(GROUP( JOIN(TEXT(cell), ',') ), '\n')
 console.log(CSV('a,b,c\nd,e,f', 0).groups)
 => [ [a, b, c], [d, e, f] ]
 ```
@@ -47,7 +48,7 @@ match the first of any matching subrules.
 ### MAYBE (subrule)
 
 if subrule matches, return that match, else allow an empty match.
-The same as `OR(subrule, empty)`
+The same as `OR(subrule, EMPTY)` where `EMPTY = AND()`
 
 ### MANY (subrule)
 
@@ -95,10 +96,22 @@ characters separated by space, surrounded by parens. (the CATCHes have been left
 for clarity)
 
 ```
+var {RECURSE,AND,MAYBE,JOIN,OR} = require('stack-expression')
 var list = RECURSE()
 var value = /^\w+/
 list(AND('(', MAYBE(JOIN(OR(value | list), space)), ')'))
 ```
+
+## examples
+
+### [JSON](./examples/json.js)
+
+A json parser in 50 lines, including comments.
+
+### [lisp](./examples/lisp.js)
+
+A compact lisp parser, 20 lines. Reuses js strings and numbers from the json parser.
+
 
 ## License
 
