@@ -114,4 +114,19 @@ function GROUP (rule, map) {
   }
 }
 
-module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE}
+function line_col (input, start) {
+  var lines = input.substring(0, start).split(/\r?\n/)
+  //text editors seem to use 1-indexed lines and columns
+  return (lines.length+1) + ':' + (lines.pop().length + 1)
+}
+
+function FAIL (message) {
+  return function (input, start) {
+    var end = input.indexOf('\n', start+20)
+    throw new Error(message+' but found:'+(
+      input.substring(start, ~end ? input.length : end).trim()
+    )+(~end ? '...' :'') + '\n at position:'+start+'('+line_col(input, start)+')')
+  }
+}
+
+module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL}
