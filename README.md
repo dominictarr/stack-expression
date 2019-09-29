@@ -9,6 +9,11 @@ but the parser it generated was way too slow.
 
 How hard could it really be?
 
+(update, looks like this is a [Parsing Expression Grammar](https://en.wikipedia.org/wiki/Parsing_expression_grammar))
+
+To understand how this _really works_ I recommend reading [the explainer](./explain.md)
+(and also the code, of course!)
+
 ## example: CSV parser (JOIN, GROUP, TEXT)
 
 Here is the simplest useful example that you can't do with regular expressions.
@@ -24,12 +29,9 @@ console.log(CSV('a,b,c\nd,e,f', 0).groups)
 => [ [a, b, c], [d, e, f] ]
 ```
 
-In this library, if a capture group `CATCH(...)` surrounds only text, then it captures
-those characters. but if it surrounds other caputer groups, it groups the groups,
-and drops anything outside of groups.
-
-note the catch around the cell, `CATCH(cell)` then around that is a `JOIN` (to get lines)
-and then another catch to get the line as a group `CATCH(JOIN(CATCH(cell), ','))`
+In this library, the TEXT capture group is used to capture those characters directly.
+so there is a capture around the cell, `TEXT(cell)` then around that is a `JOIN` (to get lines)
+and then another capture, GROUP, to get the line as a group `GROUP(JOIN(CATCH(cell), ','))`
 
 A repeating pattern with a separator is a very common pattern, but a pain
 to describe in a regular expression: `pattern (separator pattern)*`
