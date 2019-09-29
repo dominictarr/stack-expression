@@ -10,7 +10,7 @@ function concat (groups, m) {
 
 function matches (rule, input, start) {
   if('string' === typeof rule) {
-    if(input.substring(start, start + rule.length) == rule)
+    if(input.startsWith(rule, start))
       return {length: rule.length}
     return null
   }
@@ -100,6 +100,7 @@ function TEXT (rule, map) {
     if(m = matches(rule, input, start)) {
       return {length: m.length, groups: init(input.substring(start, start+m.length), map)}
     }
+    return null
   }
 }
 
