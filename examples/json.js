@@ -8,10 +8,11 @@ var boolean = TEXT(/^true|false/, Boolean)
 var nul = TEXT(/^null/, () => null)
 
 //numbers, fairly complex
+var non_zero_int = /^-?[1-9][0-9]+/
 var int = /^-?(?:0|[1-9][0-9]*)/
 var fraction = /^\.[0-9]+/
 var decimal = AND(int, MAYBE(fraction))
-var number = TEXT(AND(decimal, MAYBE(AND('e', decimal))), Number)
+var number = TEXT(AND(decimal, MAYBE(AND('e', non_zero_int))), Number)
 
 //strings, including escaped literals
 function join (ary) { return ary.join('') }
