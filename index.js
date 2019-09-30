@@ -11,7 +11,7 @@ function concat (groups, m) {
 function matches (rule, input, start) {
   if('string' === typeof rule) {
     if(input.startsWith(rule, start))
-      return {length: rule.length}
+      return {length: rule.length, groups: null}
     return null
   }
 
