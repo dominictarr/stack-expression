@@ -16,9 +16,11 @@ var decimal = AND(int, MAYBE(fraction))
 var number = TEXT(AND(decimal, MAYBE(AND('e', /^[+-]?/, non_zero_int))), Number)
 
 //strings, including escaped literals
-function join (ary) { return ary.join('') }
-var escape = AND('\\', TEXT(/^./)), unescaped = TEXT(/^[^"\n]+/)
-var string = AND('"', GROUP(MANY(OR(escape, unescaped)), join), OR('"', FAIL('expected "')))
+function join (ary) {
+  return ary.join('')
+}
+var escaped = AND('\\', TEXT(/^./)), unescaped = TEXT(/^[^"\n\\]+/)
+var string = AND('"', GROUP(MANY(OR(escaped, unescaped)), join), OR('"', FAIL('expected "')))
 
 //note, matching unescaped string using "repeated non quote" because
 //it makes it much much faster than matching each individual character
