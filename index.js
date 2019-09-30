@@ -44,10 +44,11 @@ function OR () {
   var args = [].slice.call(arguments)
   return function (input, start) {
     var m
-    for(var i = 0; i < args.length; i++)
+    for(var i = 0; i < args.length; i++) {
       if(m = matches(args[i], input, start)) {
         return m
       }
+    }
     return null
   }
 }
@@ -130,4 +131,13 @@ function FAIL (message) {
   }
 }
 
-module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL}
+function LOG (rule, name) {
+  return function (input, start) {
+    console.log('<'+name, input.substring(start), start)
+    var m = matches(rule, input, start)
+    console.log('>', m)
+    return m
+  }
+}
+
+module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG}
