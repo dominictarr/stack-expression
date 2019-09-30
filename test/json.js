@@ -13,7 +13,7 @@ var inputs = [
   1e+300,
   1.32e-123,
   {foo: 'bar'},
-//  '"{\"foo\":\"bar\"}"'
+  '"{\"foo\":\"bar\"}"'
 ]
 
 console.log(
