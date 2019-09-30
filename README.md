@@ -118,6 +118,11 @@ throw an error. Use this once you have enough matched of a given pattern
 that the rest must match now. for example a json object or array must have a closing
 } or ]. Also a object must have a : after the string.
 
+### LOG(rule, name)
+
+dump output to `console.log` whenever rule is executed. Useful for debugging.
+Remember to remove it from your code you ship.
+
 ## examples
 
 ### [JSON](./examples/json.js)
