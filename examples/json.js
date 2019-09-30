@@ -1,4 +1,5 @@
-var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,GROUP,TEXT,FAIL}  = require('../')
+var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,GROUP,TEXT,FAIL,LOG}  = require('../')
+
 
 //white space
 var _ = /^\s*/
@@ -8,11 +9,11 @@ var boolean = TEXT(/^true|false/, Boolean)
 var nul = TEXT(/^null/, () => null)
 
 //numbers, fairly complex
-var non_zero_int = /^-?[1-9][0-9]+/
+var non_zero_int = /^[1-9][0-9]+/
 var int = /^-?(?:0|[1-9][0-9]*)/
 var fraction = /^\.[0-9]+/
 var decimal = AND(int, MAYBE(fraction))
-var number = TEXT(AND(decimal, MAYBE(AND('e', non_zero_int))), Number)
+var number = TEXT(AND(decimal, MAYBE(AND('e', /^[+-]?/, non_zero_int))), Number)
 
 //strings, including escaped literals
 function join (ary) { return ary.join('') }
@@ -25,12 +26,13 @@ var string = AND('"', GROUP(MANY(OR(escape, unescaped)), join), OR('"', FAIL('ex
 
 //objects and arrays.
 var value = RECURSE()
+var sp_value = AND(_, value, _)
 
-var array = AND('[', _, GROUP(MAYBE(JOIN(AND(_, value, _), ','))),  _, OR(']', FAIL('expected ]')))
+var array = AND('[', _, GROUP(MAYBE(JOIN(sp_value, ','))), _, OR(']', FAIL('expected ]')))
 
 //parse each key value pair into a two element array, [key, value]
 //then this is passed to toObject in the map for object.
-var keyValue = GROUP(AND( _, string, _, OR(":", FAIL("expected :")), _, value, _ ))
+var keyValue = GROUP(AND( _, string, _, OR(":", FAIL("expected :")), sp_value))
 
 function toObject (ary) {
   var o = {}
@@ -42,9 +44,9 @@ function toObject (ary) {
 var object = AND('{', _, GROUP(MAYBE(JOIN(keyValue, ',' )), toObject), _, OR('}', FAIL('expected }')))
 
 //accept any valid json type at the top level.
-value(OR(object, array, string, number, nul, boolean, FAIL('expected json value')))
+value(OR(object, string, number, nul, boolean, array))
 
-module.exports = value
+module.exports = OR(sp_value, FAIL('expected json value'))
 
 //these might be useful in other parsers
 module.exports.string = string
