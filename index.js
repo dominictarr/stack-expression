@@ -133,9 +133,9 @@ function FAIL (message) {
 
 function LOG (rule, name) {
   return function (input, start) {
-    console.log('<'+name, input.substring(start), start)
+    console.log('<'+name, input.substring(start, start+20)+'...')
     var m = matches(rule, input, start)
-    console.log('>', m)
+    console.log('>', input.substring(start, start + m.length), m)
     return m
   }
 }
