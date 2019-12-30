@@ -123,6 +123,16 @@ that the rest must match now. for example a json object or array must have a clo
 dump output to `console.log` whenever rule is executed. Useful for debugging.
 Remember to remove it from your code you ship.
 
+### PEEK (rule)
+
+match if a rule comes next, but do not consume any characters.
+I'd recommend avoiding this if possible.
+
+### NOT (rule)
+
+match if the following rule _does not match_. does not consume any characters.
+I'd recommend avoiding this if possible.
+
 ## examples
 
 ### [JSON](./examples/json.js)
@@ -133,7 +143,6 @@ including GROUP (with map), RECURSE, and FAIL.
 ### [lisp](./examples/lisp.js)
 
 A compact lisp parser, 20 lines. Reuses js strings and numbers from the json parser.
-
 
 ## License
 
