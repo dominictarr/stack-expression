@@ -91,15 +91,15 @@ function RECURSE () {
 
 function id (e) { return e }
 
-function init (group, map, def) {
-  return [(map || id)(group || def)]
+function init (group, map, def, start) {
+  return [(map || id)(group || def, start)]
 }
 
 function TEXT (rule, map) {
   return function (input, start) {
     var m
     if(m = matches(rule, input, start)) {
-      return {length: m.length, groups: init(input.substring(start, start+m.length), map)}
+      return {length: m.length, groups: init(input.substring(start, start+m.length), map, null, start)}
     }
     return null
   }
@@ -111,7 +111,7 @@ function GROUP (rule, map) {
   return function (input, start) {
     var m
     if(m = matches(rule, input, start)) {
-      return {length: m.length, groups: init(m.groups, map, [])}
+      return {length: m.length, groups: init(m.groups, map, [], start)}
     }
   }
 }
@@ -126,7 +126,7 @@ function FAIL (message) {
   return function (input, start) {
     var end = input.indexOf('\n', start+20)
     throw new Error(message+' but found:'+(
-      input.substring(start, ~end ? input.length : end).trim()
+      input.substring(start, ~end ? Math.min(input.length, start + 1000) : end).trim()
     )+(~end ? '...' :'') + '\n at position:'+start+'('+line_col(input, start)+')')
   }
 }
@@ -135,9 +135,30 @@ function LOG (rule, name) {
   return function (input, start) {
     console.log('<'+name, input.substring(start, start+20)+'...')
     var m = matches(rule, input, start)
-    console.log('>', input.substring(start, start + m.length), m)
+    if(m)
+      console.log('>', input.substring(start, start + m.length), m)
+    else
+      console.log('> no match')
     return m
   }
 }
 
-module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG}
+function NOT (rule) {
+  return function (input, start) {
+    if(!rule(input, start))
+      return {length: 0, groups:[]}
+    else
+      return null
+  }
+}
+
+function PEEK (rule) {
+  return function (input, start) {
+    if(rule(input, start))
+      return {length: 0, groups:[]}
+    else
+      return null
+  }
+}
+
+module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG, NOT, PEEK}
