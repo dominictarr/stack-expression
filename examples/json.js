@@ -53,3 +53,4 @@ module.exports = OR(sp_value, FAIL('expected json value'))
 //these might be useful in other parsers
 module.exports.string = string
 module.exports.number = number
+module.exports.boolean = boolean
