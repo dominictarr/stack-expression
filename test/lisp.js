@@ -4,14 +4,16 @@ var lisp = require('../examples/lisp')
 var isArray = Array.isArray
 
 function equals(actual, expected) {
-  if(actual === expected) return
-  if(isArray(expected))
-    assert.equal(isArray(actual), true, 'expected :'+JSON.stringify(actual) + 'to be an array')
   if('symbol' === typeof expected)
     return assert.equal(typeof actual, 'symbol') && assert.equal(String(actual), String(expected))
-  assert.equal(actual.length, expected.length)
-  for(var i = 0; i < expected.length; i++)
-    equals(actual[i], expected[i])
+  else if(isArray(expected)) {
+    assert.equal(isArray(actual), true, 'expected :'+JSON.stringify(actual) + 'to be an array')
+    assert.equal(actual.length, expected.length)
+    for(var i = 0; i < expected.length; i++)
+      equals(actual[i], expected[i])
+  }
+  else
+    assert.equal(actual, expected)
 }
 
 var input = [
@@ -24,7 +26,8 @@ var input = [
   '"hello world"',
   '("hello world")',
   'list',
-  '(list 1 2 3 4)'
+  '(list 1 2 3 4)',
+  '(-1 0 1 true false nil)'
 ]
 var output = [
   [],
@@ -36,7 +39,8 @@ var output = [
   "hello world",
   ["hello world"],
   Symbol('list'),
-  [Symbol('list'), 1, 2, 3, 4]
+  [Symbol('list'), 1, 2, 3, 4],
+  [-1, 0, 1, true, false, null]
 ]
 
 //console.log(lisp('((()))', 0).groups[0])
