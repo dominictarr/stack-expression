@@ -15,4 +15,4 @@ var nil = TEXT(/^nil/, function () { return null })
 var list = AND('(', _, GROUP(MAYBE(JOIN(value, __))), _, ')')
 value(OR(list, string, number, nil, boolean, sym))
 
-module.exports = value
+module.exports = AND(_, value, _)
