@@ -5,7 +5,7 @@ var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,GROUP,TEXT,FAIL,LOG}  = require('../')
 var _ = /^\s*/
 
 //basic primitives
-var boolean = TEXT(/^true|false/, Boolean)
+var boolean = TEXT(/^true|false/, function (t) { return 'true' === t })
 var nul = TEXT(/^null/, () => null)
 
 //numbers, fairly complex
