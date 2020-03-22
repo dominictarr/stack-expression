@@ -7,7 +7,7 @@ function equals(actual, expected) {
   if('symbol' === typeof expected)
     return assert.equal(typeof actual, 'symbol') && assert.equal(String(actual), String(expected))
   else if(isArray(expected)) {
-    assert.equal(isArray(actual), true, 'expected :'+JSON.stringify(actual) + 'to be an array')
+    assert.equal(isArray(actual), true, 'expected: '+JSON.stringify(actual) + ' to be an array')
     assert.equal(actual.length, expected.length)
     for(var i = 0; i < expected.length; i++)
       equals(actual[i], expected[i])
@@ -27,7 +27,9 @@ var input = [
   '("hello world")',
   'list',
   '(list 1 2 3 4)',
-  '(-1 0 1 true false nil)'
+  '(-1 0 1 true false nil)',
+  '(false)',
+  '(if false 1 0)'
 ]
 var output = [
   [],
@@ -40,7 +42,9 @@ var output = [
   ["hello world"],
   Symbol('list'),
   [Symbol('list'), 1, 2, 3, 4],
-  [-1, 0, 1, true, false, null]
+  [-1, 0, 1, true, false, null],
+  [false],
+  [Symbol('if'), false, 1, 0]
 ]
 
 //console.log(lisp('((()))', 0).groups[0])
@@ -48,7 +52,7 @@ var output = [
 
 for(var i = 0; i < input.length; i++) {
   var parsed = lisp(input[i], 0)
-  console.error(parsed)
+  console.error('test', i, input[i])
   var g = parsed.groups[0]
   equals(g, output[i])
 }
