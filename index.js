@@ -1,5 +1,9 @@
+function isDefined (m) {
+  return 'undefined' !== typeof m
+}
+
 function concat (groups, m) {
-  if(!m.groups) return groups
+  if(m.groups == null) return groups
   if(groups) {
     if(Array.isArray(groups))
       return groups.concat(m.groups)
@@ -18,6 +22,8 @@ function matches (rule, input, start) {
   if('function' === typeof rule)
     return rule(input, start)
 
+  //regular expressions must have ^(?:...) around them.
+  //but what is the fast way to ensure that is there?
   var m = rule.exec(input.substring(start))
   if(m)
     return {length: m[0].length, groups: null}
