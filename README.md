@@ -118,6 +118,17 @@ throw an error. Use this once you have enough matched of a given pattern
 that the rest must match now. for example a json object or array must have a closing
 } or ]. Also a object must have a : after the string.
 
+### EXPECT(rule, message)
+
+If `rule` isn't matched, fails with `message`.
+useful for patterns that once started, must end.
+for example `AND('(', MANY(value), EXPECT(')'))`
+Once the opening '(' is matched, it will match as many values
+as it can, then expect a ')'. If it doesn't find a ')' an error
+will be thrown.
+
+If `rule` is a string, then `message` will default to the same value.
+
 ### LOG(rule, name)
 
 dump output to `console.log` whenever rule is executed. Useful for debugging.
