@@ -132,9 +132,15 @@ function FAIL (message) {
   return function (input, start) {
     var end = input.indexOf('\n', start+20)
     throw new Error(message+' but found:'+(
-      input.substring(start, ~end ? Math.min(input.length, start + 1000) : end).trim()
+      input.substring(start, ~end ? end : Math.min(input.length, start + 1000)).trim()
     )+(~end ? '...' :'') + '\n at position:'+start+'('+line_col(input, start)+')')
   }
+}
+
+function EXPECT(rule, message) {
+  if('string' === typeof rule)
+    message = message || 'expected:'+rule
+  return OR(rule, FAIL(message))
 }
 
 function LOG (rule, name) {
@@ -167,4 +173,4 @@ function PEEK (rule) {
   }
 }
 
-module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG, NOT, PEEK}
+module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG, NOT, PEEK, EXPECT}
