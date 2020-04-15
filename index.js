@@ -128,12 +128,19 @@ function line_col (input, start) {
   return (lines.length+1) + ':' + (lines.pop().length + 1)
 }
 
+function position (input, start) {
+  var end = input.indexOf('\n', start+20)
+  return input
+    .substring(
+      start, ~end ? end : Math.min(input.length, start + 1000)
+    ).trim() +
+    (~end ? '...' :'') + '\n at:'+line_col(input, start)+
+    ', ('+start+')'
+}
+
 function FAIL (message) {
   return function (input, start) {
-    var end = input.indexOf('\n', start+20)
-    throw new Error(message+' but found:'+(
-      input.substring(start, ~end ? end : Math.min(input.length, start + 1000)).trim()
-    )+(~end ? '...' :'') + '\n at position:'+start+'('+line_col(input, start)+')')
+    throw new Error(message+' but found:'+position(input, start))
   }
 }
 
@@ -173,4 +180,10 @@ function PEEK (rule) {
   }
 }
 
-module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG, NOT, PEEK, EXPECT}
+function EOF (input, start) {
+  if(start < input.length)
+    throw new Error('expected end of file, found:'+position(input, start))
+  else return {length: 0, groups: []}
+}
+
+module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG, NOT, PEEK, EXPECT, EOF}
