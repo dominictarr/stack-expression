@@ -71,6 +71,18 @@ To allow an empty list, use `MAYBE(JOIN(item, separator))`
 
 > note: might add an option to join to allow empty list.
 
+### PEEK (rule)
+
+match if a rule comes next, but do not consume any characters.
+I'd recommend avoiding this if possible, back tracking will
+cause your parser to be slow.
+
+### NOT (rule)
+
+match if the following rule _does not match_. does not consume any characters.
+I'd recommend avoiding this if possible, back tracking will
+cause your parser to be slow.
+
 ## capturing groups: TEXT, GROUP
 
 ### TEXT(subrule, map?)
@@ -133,16 +145,6 @@ If `rule` is a string, then `message` will default to the same value.
 
 dump output to `console.log` whenever rule is executed. Useful for debugging.
 Remember to remove it from your code you ship.
-
-### PEEK (rule)
-
-match if a rule comes next, but do not consume any characters.
-I'd recommend avoiding this if possible.
-
-### NOT (rule)
-
-match if the following rule _does not match_. does not consume any characters.
-I'd recommend avoiding this if possible.
 
 ### EOF
 
