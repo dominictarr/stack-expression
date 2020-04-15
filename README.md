@@ -144,6 +144,11 @@ I'd recommend avoiding this if possible.
 match if the following rule _does not match_. does not consume any characters.
 I'd recommend avoiding this if possible.
 
+### EOF
+
+matches the end of the file.
+throws an error if it's not the end of the end of the file.
+
 ## examples
 
 ### [JSON](./examples/json.js)
