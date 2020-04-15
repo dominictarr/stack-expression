@@ -7,7 +7,9 @@
     "url": "git://github.com/dominictarr/stack-expression.git"
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "tape": "^4.13.2"
+  },
   "scripts": {
     "test": "tape test/*.js"
   },
