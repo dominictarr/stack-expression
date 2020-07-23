@@ -12,50 +12,43 @@ function concat (groups, m) {
   return m.groups
 }
 
-function matches (rule, input, start) {
-  if('string' === typeof rule) {
-    if(input.startsWith(rule, start))
-      return {length: rule.length, groups: null}
-    return null
-  }
+function matches (rule, input, start, end, groups) {
+  if('string' === typeof rule)
+    return input.startsWith(rule, start) ? rule.length : -1
 
   if('function' === typeof rule)
-    return rule(input, start)
+    return rule(input, start, end, groups)
 
   //regular expressions must have ^(?:...) around them.
   //but what is the fast way to ensure that is there?
   var m = rule.exec(input.substring(start))
-  if(m)
-    return {length: m[0].length, groups: null}
-
-  return null
+  return m ? m[0].length : -1
 }
 
 function AND () {
   var args = [].slice.call(arguments)
-  return function (input, start) {
-    var groups = null, c = 0, m
+  return function (input, start, end, groups) {
+    var c = 0, m
     for(var i = 0; i < args.length; i++)
-      if(m = matches(args[i], input, start + c)) {
-        c += m.length
-        groups = concat(groups, m)
+      if(~(m = matches(args[i], input, start + c, end, groups))) {
+        c += m
       }
       else
-        return null
-    return {length: c, groups: groups}
+        return -1
+    return c //{length: c, groups: groups}
   }
 }
 
 function OR () {
   var args = [].slice.call(arguments)
-  return function (input, start) {
+  return function (input, start, end, groups) {
     var m
     for(var i = 0; i < args.length; i++) {
-      if(m = matches(args[i], input, start)) {
+      if(~(m = matches(args[i], input, start, end, groups))) {
         return m
       }
     }
-    return null
+    return -1
   }
 }
 
@@ -65,13 +58,11 @@ const MAYBE = function (a) {
 }
 
 function MANY (a) {
-  return function (input, start) {
-    var c = 0, groups, m
-    while(m = matches(a, input, start + c)) {
-      c += m.length
-      groups = concat(groups, m)
-    }
-    return {length: c, groups: groups}
+  return function (input, start, end, groups) {
+    var c = 0, m
+    while(~(m = matches(a, input, start + c, end, groups)))
+      c += m
+    return c
   }
 }
 
@@ -85,40 +76,43 @@ function JOIN (a, separate) {
 
 function RECURSE () {
   var rule
-  return function recurse (input, start) {
+  return function recurse (input, start, end, groups) {
     if(!rule) {
       rule = input
       return recurse
     }
-    return rule(input, start)
+    
+    return rule(input, start, end, groups)
   }
 }
 
 
 function id (e) { return e }
 
-function init (group, map, def, start) {
-  return [(map || id)(group || def, start)]
-}
+// function init (group, map, def, start) {
+  // return [(map || id)(group || def, start)]
+// }
 
 function TEXT (rule, map) {
-  return function (input, start) {
+  return function (input, start, end, groups) {
     var m
-    if(m = matches(rule, input, start)) {
-      return {length: m.length, groups: init(input.substring(start, start+m.length), map, null, start)}
+    if(~(m = matches(rule, input, start, end, groups))) {
+      groups.push((map || id)(input.substring(start, start + m)))
     }
-    return null
+    return m
   }
 }
 
 //note, initialize with a double array [[]] because they'll be concatenated
 //so an empty group will remain an empty array.
 function GROUP (rule, map) {
-  return function (input, start) {
+  return function (input, start, end, groups) {
+    var _groups = []
     var m
-    if(m = matches(rule, input, start)) {
-      return {length: m.length, groups: init(m.groups, map, [], start)}
+    if(~(m = matches(rule, input, start, end, _groups))) {
+        groups.push((map || id)(_groups))
     }
+    return m
   }
 }
 
@@ -154,7 +148,7 @@ function LOG (rule, name) {
   return function (input, start) {
     console.log('<'+name, input.substring(start, start+20)+'...')
     var m = matches(rule, input, start)
-    if(m)
+    if(~m)
       console.log('>', input.substring(start, start + m.length), m)
     else
       console.log('> no match')
@@ -164,26 +158,20 @@ function LOG (rule, name) {
 
 function NOT (rule) {
   return function (input, start) {
-    if(!rule(input, start))
-      return {length: 0, groups:[]}
-    else
-      return null
+    return ~rule(input, start) ? -1 : 0
   }
 }
 
 function PEEK (rule) {
   return function (input, start) {
-    if(rule(input, start))
-      return {length: 0, groups:[]}
-    else
-      return null
+    return ~rule(input, start) ? 0 : -1
   }
 }
 
 function EOF (input, start) {
   if(start < input.length)
     throw new Error('expected end of file, found:'+position(input, start))
-  else return {length: 0, groups: []}
+  else return 0
 }
 
 module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG, NOT, PEEK, EXPECT, EOF}
