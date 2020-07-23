@@ -51,8 +51,8 @@ var output = [
 //console.log(lisp('"hello"', 0).groups[0])
 
 for(var i = 0; i < input.length; i++) {
-  var parsed = lisp(input[i], 0)
+  var g = []
+  var m = lisp(input[i], 0, input[i].length, g)
   console.error('test', i, input[i])
-  var g = parsed.groups[0]
-  equals(g, output[i])
+  equals(g[0], output[i])
 }

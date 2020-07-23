@@ -58,7 +58,8 @@ var output = [
 
 input.forEach(function (src, i) {
   console.log('src', src)
-  var data = parens(src, 0)
+  var g = []
+  var data = parens(src, 0, src.length, g)
   console.log('data', data)
-  t.deepEqual(data.groups, [output[i]])
+  t.deepEqual(g, [output[i]])
 })
