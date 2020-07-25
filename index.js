@@ -74,16 +74,25 @@ function JOIN (a, separate) {
   return AND(a, MANY(AND(separate, a)))
 }
 
-function RECURSE () {
-  var rule
-  return function recurse (input, start, end, groups) {
-    if(!rule) {
-      rule = input
-      return recurse
-    }
+// function RECURSE () {
+  // var rule
+  // return function recurse (input, start, end, groups) {
+    // if(!rule) {
+      // rule = input
+      // return recurse
+    // }
     
+    // return rule(input, start, end, groups)
+  // }
+// }
+
+function RECURSE (create) {
+  var rule
+  function wrapper (input, start, end, groups) {
     return rule(input, start, end, groups)
   }
+  rule = create(wrapper)
+  return wrapper
 }
 
 
