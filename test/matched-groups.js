@@ -14,26 +14,26 @@ var {RECURSE, AND, MANY, OR, NOT, GROUP, FAIL, PEEK} = require('../')
 var opening = ['(', '[', '<', '{']
 var closing = [')', ']', '>', '}']
 
-function createParens(op, cl, not) {
-  return AND(
-    op,
-    MANY(parens),
-    OR(
-      cl,
-      PEEK(OR(...not))
+
+var parens = RECURSE(function (parens) {
+  function createParens(op, cl, not) {
+    return AND(
+      op,
+      MANY(parens),
+      OR(
+        cl,
+        PEEK(OR(...not))
+      )
     )
-  )
-}
+  }
 
-var parens = RECURSE()
+  var round  = createParens('(', ')', ['>', '}', ']'])
+  var angle  = createParens('<', '>', ['}', ']', ')'])
+  var curly  = createParens('{', '}', [']', ')', '>'])
+  var square = createParens('[', ']', [')', '>', '}'])
 
-var round  = createParens('(', ')', ['>', '}', ']'])
-var angle  = createParens('<', '>', ['}', ']', ')'])
-var curly  = createParens('{', '}', [']', ')', '>'])
-var square = createParens('[', ']', [')', '>', '}'])
-
-parens(GROUP(OR(round , square, curly, angle)))
-
+  return GROUP(OR(round , square, curly, angle))
+})
 var input = [
   '()',
   '(())',

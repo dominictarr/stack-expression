@@ -57,8 +57,9 @@ function match(rule, input, matched, groups) {
 }
 var name = /^\w+/, space = /^\s+/
 
-var LIST = RECURSE()
-LIST(AND('(', GROUP(MAYBE(JOIN(OR(TEXT(name), LIST), space))), ')'))
+var LIST = RECURSE(function (LIST) {
+  return AND('(', GROUP(MAYBE(JOIN(OR(TEXT(name), LIST), space))), ')')
+})
 
 match(LIST, '(a)'      , 3, [['a']])
 match(LIST, '((a))'    , 5, [[['a']]])
