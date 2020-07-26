@@ -1,7 +1,3 @@
-function isDefined (m) {
-  return 'undefined' !== typeof m
-}
-
 function Match (string) {
   return function (input, start, end) {
     return (
@@ -23,19 +19,6 @@ function toRule (r) {
   if('string'   === typeof r) return Match(r)
   if(r.exec)                  return MatchRegexp(r) //note, regexp must match start with ^
   throw new Error('not a valid rule:' + r)  
-}
-
-function matches (rule, input, start, end, groups) {
-  if('string' === typeof rule)
-    return input.startsWith(rule, start) ? rule.length : -1
-
-  if('function' === typeof rule)
-    return rule(input, start, end, groups)
-
-  //regular expressions must have ^(?:...) around them.
-  //but what is the fast way to ensure that is there?
-  var m = rule.exec(input.substring(start))
-  return m ? m[0].length : -1
 }
 
 function AND () {
@@ -99,10 +82,6 @@ function RECURSE (create) {
 
 
 function id (e) { return e }
-
-// function init (group, map, def, start) {
-  // return [(map || id)(group || def, start)]
-// }
 
 function TEXT (rule, map) {
   rule = toRule(rule)
