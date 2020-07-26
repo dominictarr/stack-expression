@@ -4,47 +4,47 @@ assert.equal = function (a, b) {
    console.log('eq', a , b)
    eq(a, b)
 }
-var {AND,OR,MAYBE,MANY,MORE,JOIN,RECURSE,TEXT,GROUP}  = require('../')
+var {And,Or,Maybe,Many,More,Join,Recurse,Text,Group}  = require('../')
 
-var aORb = OR(/^a/, /^b/)
+var aORb = Or(/^a/, /^b/)
 
 assert.equal(aORb('a', 0), 1)
 assert.equal(aORb('b', 0), 1)
 assert.equal(aORb('c', 0), -1)
 
-var aANDb = AND(/^a/, /^b/)
+var aANDb = And(/^a/, /^b/)
 
 assert.equal(aANDb('ab', 0), 2)
 assert.equal(aANDb('ba', 0), -1)
 
-var MAYBEb = MAYBE(/^b/)
+var MAYBEb = Maybe(/^b/)
 
 assert.equal(MAYBEb('ba', 0), 1)
 assert.equal(MAYBEb('ab', 0), 0)
 
-var MANYa = MANY(/^a/)
+var MANYa = Many(/^a/)
 
 assert.equal(MANYa('ab', 0), 1)
 assert.equal(MANYa('aaab', 0), 3)
 assert.equal(MANYa('b', 0), 0)
 
-var MOREa = MORE(/^a/)
+var MOREa = More(/^a/)
 
 assert.equal(MOREa('aaab', 0), 3)
 assert.equal(MOREa('b', 0), -1)
 
-var aCOMMAS = JOIN(/^a/, /^,/)
+var aCOMMAS = Join(/^a/, /^,/)
 
 assert.equal(aCOMMAS('a,a,a',0), 5)
 assert.equal(aCOMMAS('a,a,',0), 3)
 
-var aGROUPS = JOIN(TEXT(/^a/), /^,/)
+var aGROUPS = Join(Text(/^a/), /^,/)
 
 var g = []
 assert.equal(aGROUPS('a,a,a', 0, 5, g), 5)
 assert.deepEqual(g, ['a', 'a', 'a'])
 
-var abcSPACES = JOIN(/^[abc]+/, /^\s+/)
+var abcSPACES = Join(/^[abc]+/, /^\s+/)
 
 assert.equal(abcSPACES('a b c',0), 5)
 assert.equal(abcSPACES('aaa bbb   c',0), 11)
@@ -57,8 +57,8 @@ function match(rule, input, matched, groups) {
 }
 var name = /^\w+/, space = /^\s+/
 
-var LIST = RECURSE(function (LIST) {
-  return AND('(', GROUP(MAYBE(JOIN(OR(TEXT(name), LIST), space))), ')')
+var LIST = Recurse(function (LIST) {
+  return And('(', Group(Maybe(Join(Or(Text(name), LIST), space))), ')')
 })
 
 match(LIST, '(a)'      , 3, [['a']])
@@ -68,12 +68,12 @@ match(LIST, '((()))'   , 6, [[[[]]]])
 
 
 //And(Catch(/^\w+/), '@', Catch(/^\w+\.[a-z]+/))
-var EMAIL = AND(TEXT(/^\w+/), '@', TEXT(/^\w+\.[a-z]+/))
+var EMAIL = And(Text(/^\w+/), '@', Text(/^\w+\.[a-z]+/))
 
 //var email = EMAIL('foo@bar.baz', 0, 11, [])
 
 match(EMAIL, 'foo@bar.baz', 11, ['foo', 'bar.baz'])
 
-var CSV = JOIN(GROUP(JOIN(TEXT(/^\w+/),',')),'\n')
+var CSV = Join(Group(Join(Text(/^\w+/),',')),'\n')
 
 match(CSV, 'a,b,c\nd,e,f', 11, [['a','b','c'], ['d', 'e', 'f']])

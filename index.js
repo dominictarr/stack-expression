@@ -133,7 +133,7 @@ function Fail (message) {
 function Expect (rule, message) {
   if('string' === typeof rule)
     message = message || 'expected:'+rule
-  return OR(rule, FAIL(message))
+  return Or(rule, Fail(message))
 }
 
 function Log (rule, name) {

@@ -8,21 +8,21 @@
 //to parse a format that works like this. for example, html.
 
 var t = require('assert')
-var {RECURSE, AND, MANY, OR, NOT, GROUP, FAIL, PEEK} = require('../')
+var {Recurse, And, Many, Or, Not, Group, Fail, Peek} = require('../')
 
 
 var opening = ['(', '[', '<', '{']
 var closing = [')', ']', '>', '}']
 
 
-var parens = RECURSE(function (parens) {
+var parens = Recurse(function (parens) {
   function createParens(op, cl, not) {
-    return AND(
+    return And(
       op,
-      MANY(parens),
-      OR(
+      Many(parens),
+      Or(
         cl,
-        PEEK(OR(...not))
+        Peek(Or(...not))
       )
     )
   }
@@ -32,7 +32,7 @@ var parens = RECURSE(function (parens) {
   var curly  = createParens('{', '}', [']', ')', '>'])
   var square = createParens('[', ']', [')', '>', '}'])
 
-  return GROUP(OR(round , square, curly, angle))
+  return Group(Or(round, square, curly, angle))
 })
 var input = [
   '()',
