@@ -2,14 +2,27 @@ function isDefined (m) {
   return 'undefined' !== typeof m
 }
 
-function concat (groups, m) {
-  if(m.groups == null) return groups
-  if(groups) {
-    if(Array.isArray(groups))
-      return groups.concat(m.groups)
-    else return [groups].concat(m.groups)
+function Match (string) {
+  return function (input, start, end) {
+    return (
+      end - start < string.length ? -1
+    : input.startsWith(string, start) ? string.length
+    : -1
+    )
   }
-  return m.groups
+}
+function MatchRegexp (rule) {
+  return function (input, start, end) {
+    var m = rule.exec(input.substring(start, end))
+    return m ? m[0].length : -1
+  }
+}
+
+function toRule (r) {
+  if('function' === typeof r) return r
+  if('string'   === typeof r) return Match(r)
+  if(r.exec)                  return MatchRegexp(r) //note, regexp must match start with ^
+  throw new Error('not a valid rule:' + r)  
 }
 
 function matches (rule, input, start, end, groups) {
@@ -26,11 +39,11 @@ function matches (rule, input, start, end, groups) {
 }
 
 function AND () {
-  var args = [].slice.call(arguments)
+  var args = [].map.call(arguments, toRule)
   return function (input, start, end, groups) {
     var c = 0, m
     for(var i = 0; i < args.length; i++)
-      if(~(m = matches(args[i], input, start + c, end, groups))) {
+      if(~(m = args[i](input, start + c, end, groups))) {
         c += m
       }
       else
@@ -40,11 +53,11 @@ function AND () {
 }
 
 function OR () {
-  var args = [].slice.call(arguments)
+  var args = [].map.call(arguments, toRule)
   return function (input, start, end, groups) {
     var m
     for(var i = 0; i < args.length; i++) {
-      if(~(m = matches(args[i], input, start, end, groups))) {
+      if(~(m = args[i](input, start, end, groups))) {
         return m
       }
     }
@@ -57,10 +70,11 @@ const MAYBE = function (a) {
   return OR(a, EMPTY)
 }
 
-function MANY (a) {
+function MANY (rule) {
+  rule = toRule(rule)
   return function (input, start, end, groups) {
     var c = 0, m
-    while(~(m = matches(a, input, start + c, end, groups)))
+    while(~(m = rule(input, start + c, end, groups)))
       c += m
     return c
   }
@@ -73,18 +87,6 @@ function MORE (a) {
 function JOIN (a, separate) {
   return AND(a, MANY(AND(separate, a)))
 }
-
-// function RECURSE () {
-  // var rule
-  // return function recurse (input, start, end, groups) {
-    // if(!rule) {
-      // rule = input
-      // return recurse
-    // }
-    
-    // return rule(input, start, end, groups)
-  // }
-// }
 
 function RECURSE (create) {
   var rule
@@ -103,9 +105,10 @@ function id (e) { return e }
 // }
 
 function TEXT (rule, map) {
+  rule = toRule(rule)
   return function (input, start, end, groups) {
     var m
-    if(~(m = matches(rule, input, start, end, groups))) {
+    if(~(m = rule(input, start, end, groups))) {
       groups.push((map || id)(input.substring(start, start + m)))
     }
     return m
@@ -115,10 +118,11 @@ function TEXT (rule, map) {
 //note, initialize with a double array [[]] because they'll be concatenated
 //so an empty group will remain an empty array.
 function GROUP (rule, map) {
+  rule = toRule(rule)
   return function (input, start, end, groups) {
     var _groups = []
     var m
-    if(~(m = matches(rule, input, start, end, _groups))) {
+    if(~(m = rule(input, start, end, _groups))) {
         groups.push((map || id)(_groups))
     }
     return m
