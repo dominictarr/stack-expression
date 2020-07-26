@@ -21,7 +21,7 @@ function toRule (r) {
   throw new Error('not a valid rule:' + r)  
 }
 
-function AND () {
+function And () {
   var args = [].map.call(arguments, toRule)
   return function (input, start, end, groups) {
     var c = 0, m
@@ -35,7 +35,7 @@ function AND () {
   }
 }
 
-function OR () {
+function Or () {
   var args = [].map.call(arguments, toRule)
   return function (input, start, end, groups) {
     var m
@@ -48,12 +48,12 @@ function OR () {
   }
 }
 
-const EMPTY = AND()
-const MAYBE = function (a) {
-  return OR(a, EMPTY)
+const Empty = And()
+const Maybe = function (a) {
+  return Or(a, Empty)
 }
 
-function MANY (rule) {
+function Many (rule) {
   rule = toRule(rule)
   return function (input, start, end, groups) {
     var c = 0, m
@@ -63,15 +63,15 @@ function MANY (rule) {
   }
 }
 
-function MORE (a) {
-  return AND(a, MANY(a))
+function More (a) {
+  return And(a, Many(a))
 }
 
-function JOIN (a, separate) {
-  return AND(a, MANY(AND(separate, a)))
+function Join (a, separate) {
+  return And(a, Many(And(separate, a)))
 }
 
-function RECURSE (create) {
+function Recurse (create) {
   var rule
   function wrapper (input, start, end, groups) {
     return rule(input, start, end, groups)
@@ -83,7 +83,7 @@ function RECURSE (create) {
 
 function id (e) { return e }
 
-function TEXT (rule, map) {
+function Text (rule, map) {
   rule = toRule(rule)
   return function (input, start, end, groups) {
     var m
@@ -96,7 +96,7 @@ function TEXT (rule, map) {
 
 //note, initialize with a double array [[]] because they'll be concatenated
 //so an empty group will remain an empty array.
-function GROUP (rule, map) {
+function Group (rule, map) {
   rule = toRule(rule)
   return function (input, start, end, groups) {
     var _groups = []
@@ -124,19 +124,19 @@ function position (input, start) {
     ', ('+start+')'
 }
 
-function FAIL (message) {
+function Fail (message) {
   return function (input, start) {
     throw new Error(message+' but found:'+position(input, start))
   }
 }
 
-function EXPECT(rule, message) {
+function Expect (rule, message) {
   if('string' === typeof rule)
     message = message || 'expected:'+rule
   return OR(rule, FAIL(message))
 }
 
-function LOG (rule, name) {
+function Log (rule, name) {
   return function (input, start) {
     console.log('<'+name, input.substring(start, start+20)+'...')
     var m = matches(rule, input, start)
@@ -148,13 +148,13 @@ function LOG (rule, name) {
   }
 }
 
-function NOT (rule) {
+function Not (rule) {
   return function (input, start) {
     return ~rule(input, start) ? -1 : 0
   }
 }
 
-function PEEK (rule) {
+function Peek (rule) {
   return function (input, start) {
     return ~rule(input, start) ? 0 : -1
   }
@@ -166,4 +166,4 @@ function EOF (input, start) {
   else return 0
 }
 
-module.exports = {AND, OR, EMPTY, MAYBE, MANY, MORE, JOIN, TEXT, GROUP, RECURSE, FAIL, LOG, NOT, PEEK, EXPECT, EOF}
+module.exports = {And, Or, Empty, Maybe, Many, More, Join, Text, Group, Recurse, Fail, Log, Not, Peek, Expect, EOF}
