@@ -49,7 +49,7 @@ Or is the simplest way to combine rules. It takes a list of rules,
 it tries each of them (at the same start position) and returns the first match (or -1 if none match)
 
 ``` js
-function OR (rules...) {
+function Or (rules...) {
   return function (input, start) {
     for(var i = 0; i < rules.length; i++) {
       var m = rules[i](input, start, end, group)
@@ -71,7 +71,7 @@ match, and the rules match end to end, so if the first rule matches 3 chars, the
 rule starts at `start+3`
 
 ```
-function AND (rules...) {
+function And (rules...) {
   return function (input, start, end, group) {
     var m_and = 0
     for(var i = 0; i < rules.length; i++) {
@@ -179,7 +179,7 @@ lets make a Matcher for that, and extend toRule also.
 function MatchRegexp (rule) {
   return function (input, start, end) {
     var m = rule.exec(input.substring(start, end))
-    return m ? m.length : -1
+    return m ? m[0].length : -1
   }
 }
 
