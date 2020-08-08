@@ -2,95 +2,95 @@
 
 stack expressions are similar to regular expressions, but can parse nested structures.
 
-I had tried out a few parsing libraries. I tried nearley, it was easy to write
-the grammar but hard to debug the ast. chevotrain looked, good, but then it had a silly
-DSL and looked like way too much code. Another time I had played around with PEGjs
-but the parser it generated was way too slow.
+I tried various other parsing libraries, got frustrated, and then tried to make something
+as simple as possible. Here it is.
 
-How hard could it really be?
+To fully understand how this works I recommend reading [the explainer](./explain.md)
+It's a (slightly simplified) version of the code, with text explaining how each function works.
 
-(update, looks like this is a [Parsing Expression Grammar](https://en.wikipedia.org/wiki/Parsing_expression_grammar))
-
-To understand how this _really works_ I recommend reading [the explainer](./explain.md)
-(and also the code, of course!)
-
-## example: CSV parser (JOIN, GROUP, TEXT)
+## example: CSV parser (Join, Group, Text)
 
 Here is the simplest useful example that you can't do with regular expressions.
-You can't write a CSV parser that groups things into cells and lines.
-csv actually is a [regular language](https://en.wikipedia.org/wiki/Regular_language),
-the limitation here is how capture groups work in regular expressions.
+You can't write a CSV parser that Groups things into cells And lines.
+csv actually is a [regular language](https://en.wikipedia.Org/wiki/Regular_language),
+the limitation here is how capture Groups work in regular expressions.
 
 ``` js
-var {JOIN,GROUP,TEXT} = require('stack-expression')
+var {Join,Group,Text} = require('stack-expression')
 var cell = /^[\w ]*/
-var CSV = JOIN(GROUP( JOIN(TEXT(cell), ',') ), '\n')
-console.log(CSV('a,b,c\nd,e,f', 0).groups)
+var CSV = Join(Group(Join(Text(cell), ',') ), '\n')
+console.Log(CSV('a,b,c\nd,e,f', 0).Groups)
 => [ [a, b, c], [d, e, f] ]
 ```
 
-In this library, the TEXT capture group is used to capture those characters directly.
-so there is a capture around the cell, `TEXT(cell)` then around that is a `JOIN` (to get lines)
-and then another capture, GROUP, to get the line as a group `GROUP(JOIN(CATCH(cell), ','))`
+In this library, the Text capture Group is used to capture those characters directly.
+so there is a capture around the cell, `Text(cell)` then around that is a `Join` (to get lines)
+And then aNother capture, Group, to get the line as a Group `Group(Join(CATCH(cell), ','))`
 
-A repeating pattern with a separator is a very common pattern, but a pain
-to describe in a regular expression: `pattern (separator pattern)*`
-JOIN is just a built in support that takes a pattern and a seperator and does this for you.
-(I named it join, because it's similar to the join method on a javascript array)
+A repeating pattern with a separatOr is a very common pattern, but a pain
+to describe in a regular expression: `pattern (separatOr pattern)*`
+Join is just a built in suppOrt that takes a pattern And a seperatOr And does this fOr you.
+(I named it Join, because it's similar to the Join method on a javascript array)
 
-## regular patterns: AND, OR, MAYBE, MANY, MORE
+## regular patterns: And, Or, Maybe, Many, More
 
-### AND(subrules...)
+### And(subrules...)
 
 only match if all sub rules match.
 
-### OR(subrules...)
+### Or(subrules...)
 
 match the first of any matching subrules.
 
-### MAYBE (subrule)
+### Maybe (subrule)
 
 if subrule matches, return that match, else allow an empty match.
-The same as `OR(subrule, EMPTY)` where `EMPTY = AND()`
+The same as `Or(subrule, EMPTY)` where `EMPTY = And()`
 
-### MANY (subrule)
+### Many (subrule)
 
-match subrule 0 or more times, like `*` in regular expressions.
+match subrule 0 or More times, like `*` in regular expressions.
 
-### MORE (subrule)
+### More (subrule)
 
-match subrule 1 or more times, like `+` in regular expressions.
+match subrule 1 or More times, like `+` in regular expressions.
 
-It's just a shortcut for `AND(subrule, MANY(subrule))`
+It's just a shortcut for `And(subrule, Many(subrule))`
 
-### JOIN(item, separator)
+### Join(item, separatOr)
 
-join one or more `items` by `separator`.
-shortcut for `AND(item, MANY(AND(separator, item)))`
-To allow an empty list, use `MAYBE(JOIN(item, separator))`
+Join one or More `items` by `separator`.
+shortcut for `And(item, Many(And(separatOr, item)))`
+To allow an empty list, use `Maybe(Join(item, separatOr))`
 
-> note: might add an option to join to allow empty list.
+> Note: might add an option to Join to allow empty list.
 
-### PEEK (rule)
+### Peek (rule)
 
 match if a rule comes next, but do not consume any characters.
 I'd recommend avoiding this if possible, back tracking will
 cause your parser to be slow.
 
-### NOT (rule)
+### Not (rule)
 
 match if the following rule _does not match_. does not consume any characters.
 I'd recommend avoiding this if possible, back tracking will
 cause your parser to be slow.
 
-## capturing groups: TEXT, GROUP
+## capturing Groups: Text, Group
 
-### TEXT(subrule, map?)
+### Text(subrule, map?)
 
 capture the text matched in a subrule.
-map is an optional function that will be applied to a matched group.
+`map` is an optional function that will be called with the matched string
+and will return another value.
 
-### GROUP(subrule, map?)
+``` js
+//accept an integer as string, then convert to a number
+var Integer = Text(Or('0', /^[1-9][0-9]*/), (str) => +str)
+```
+
+### Group(subrule, map?)
 
 capture any subgroups into a collection. If there are no subgroups,
 but the subrule matches, an empty array is returned.
@@ -99,49 +99,55 @@ the optional map function will be applied to the groups as a whole.
 
 ## recursion
 
-### RECURSE() => subrule
+### Recurse(create(rule)) => rule
 
-return a subrule that may refer to itself. It's necessary to declare the recursive rule
-at the start, so that you can pass the rule to itself as a subrule.
+calls a rule constructor that is passed a reference to itself.
+it can then be passed to other rule combiners.
 
-> The clauses above all return a function that does they thing. To define a recursive
-stack expression we need to call the function, and also pass that function to itself
-as an argument.
+``` js
+var recursiveRule = Recurse(function (Self) {
+  return createRules(..., Self)
+})
+```
 
 The following is a lisp-like parser, that accepts nested lists of printable
-characters separated by space, surrounded by parens. (the CATCHes have been left out
+characters separated by space, surrounded by parens. (the groups have been left out
 for clarity)
 
 ``` js
-var {RECURSE,AND,MAYBE,JOIN,OR} = require('stack-expression')
-var list = RECURSE()
-var value = /^\w+/
-list(AND('(', MAYBE(JOIN(OR(value | list), space)), ')'))
+var {Recurse,And,Maybe,Join,Or} = require('stack-expression')
+var name = /^\w+/
+var _ = /^\s*/ //optional whitespace
+var __  = /^\s+/ //mandatory whitespace
+var Lisp = And(_, Recurse(function (Lisp) {
+  return Or(name, And('(', _, Maybe(Join(Lisp, __)), _, ')'))
+}), _)
 ```
 
 ## errors
 
-### FAIL(message)
+### Expect(rule, message)
 
-create a subrule that never passes, it instead throws an error.
-
-to use, put inside a `OR(expected, FAIL(message))` if expected isn't matched,
-throw an error. Use this once you have enough matched of a given pattern
-that the rest must match now. for example a json object or array must have a closing
-} or ]. Also a object must have a : after the string.
-
-### EXPECT(rule, message)
-
-If `rule` isn't matched, fails with `message`.
+If `rule` isn't matched, Fails with `message`.
 useful for patterns that once started, must end.
-for example `AND('(', MANY(value), EXPECT(')'))`
-Once the opening '(' is matched, it will match as many values
-as it can, then expect a ')'. If it doesn't find a ')' an error
+for example `And('(', Many(value), Expect(')'))`
+Once the opening '(' is matched, it will match as Many values
+as it can, then Expect a ')'. If it doesn't find a ')' an errOr
 will be thrown.
 
 If `rule` is a string, then `message` will default to the same value.
 
-### LOG(rule, name)
+### Fail(message)
+
+create a subrule that never passes, it instead throws an error.
+
+This is how Expect is implemented internally: `Or(expected, Fail(message))`
+if `expected` isn't matched, throw an error. Use this once you have enough matched of a given pattern
+that the rest must match now. fOr example a json object Or array must have a closing
+} Or ]. Also a object must have a : after the string.
+
+
+### Log(rule, name)
 
 dump output to `console.log` whenever rule is executed. Useful for debugging.
 Remember to remove it from your code you ship.
@@ -149,18 +155,18 @@ Remember to remove it from your code you ship.
 ### EOF
 
 matches the end of the file.
-throws an error if it's not the end of the end of the file.
+throws an error if it's Not the end of the end of the file.
 
 ## examples
 
 ### [JSON](./examples/json.js)
 
-A json parser in 50 lines including comments, and uses most stack-expression constructs,
-including GROUP (with map), RECURSE, and FAIL.
+A json parser in 50 lines including comments, And uses most stack-expression constructs,
+including Group (with map), Recurse, And Fail.
 
 ### [lisp](./examples/lisp.js)
 
-A compact lisp parser, 20 lines. Reuses js strings and numbers from the json parser.
+A compact lisp parser, 20 lines. Reuses js strings And numbers from the json parser.
 
 ## License
 
