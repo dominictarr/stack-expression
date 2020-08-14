@@ -70,7 +70,7 @@ and is just slightly more complicated, because it returns a match if all it's su
 match, and the rules match end to end, so if the first rule matches 3 chars, the second
 rule starts at `start+3`
 
-```
+``` js
 function And (rules...) {
   return function (input, start, end, group) {
     var m_and = 0
@@ -193,7 +193,8 @@ function toRule (r) {
 (unfortunately, there isn't a way check a regexp match at a given start, so we need to use substring)
 
 use this to make a rule that matches any word characters - for example to match an email address.
-```
+
+``` js
 var word = /^\w+/
 var email = And(word, '@', word, '.', word) //for example, foo@bar.com
 ```
