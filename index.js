@@ -125,8 +125,8 @@ function position (input, start) {
 }
 
 function Fail (message) {
-  return function (input, start) {
-    throw new Error(message+' but found:'+position(input, start))
+  return function (input, start, end) {
+    throw new Error(message+' but found:'+(start === end ? 'end of file' : position(input, start)))
   }
 }
 
@@ -149,12 +149,14 @@ function Log (rule, name) {
 }
 
 function Not (rule) {
+  rule = toRule(rule)
   return function (input, start) {
     return ~rule(input, start) ? -1 : 0
   }
 }
 
 function Peek (rule) {
+  rule = toRule(rule)
   return function (input, start) {
     return ~rule(input, start) ? 0 : -1
   }
