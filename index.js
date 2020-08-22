@@ -88,7 +88,7 @@ function Text (rule, map) {
   return function (input, start, end, groups) {
     var m
     if(~(m = rule(input, start, end, groups))) {
-      groups.push((map || id)(input.substring(start, start + m)))
+      groups((map || id)(input.substring(start, start + m)))
     }
     return m
   }
@@ -99,10 +99,10 @@ function Text (rule, map) {
 function Group (rule, map) {
   rule = toRule(rule)
   return function (input, start, end, groups) {
-    var _groups = []
+    var ary = []
     var m
-    if(~(m = rule(input, start, end, _groups))) {
-        groups.push((map || id)(_groups))
+    if(~(m = rule(input, start, end, v => ary.push(v)))) {
+        groups((map || id)(ary))
     }
     return m
   }
