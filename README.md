@@ -19,7 +19,9 @@ the limitation here is how capture Groups work in regular expressions.
 var {Join,Group,Text} = require('stack-expression')
 var cell = /^[\w ]*/
 var CSV = Join(Group(Join(Text(cell), ',') ), '\n')
-console.Log(CSV('a,b,c\nd,e,f', 0).Groups)
+var g = []
+var input = 'a,b,c\nd,e,f'
+console.log(CSV(input, 0, input.length, (v)=>g.push(g)))
 => [ [a, b, c], [d, e, f] ]
 ```
 
@@ -33,6 +35,22 @@ Join is just a built in suppOrt that takes a pattern And a seperatOr And does th
 (I named it Join, because it's similar to the Join method on a javascript array)
 
 ## regular patterns: And, Or, Maybe, Many, More
+
+### PatternConstructor(...) => Parser(input, start, end, capture) => MatchedChars || -1
+
+The general interface for this library is a PatternConstructor returns a Parser.
+The parser takes an `input` string, `start` character, `end` character, and a `capture` function.
+
+Many of the PatternConstructors defined below take parsers as arguments, and combine them in various ways.
+But they all return Parsers. To actually parse an input, call it as follows:
+
+``` js
+var parser = ...
+var g = []
+var m = parser(input, 0, input.length, (v)=>g.push(v))
+if(~m) // if the match returns 0 or a positive integer the parse succeeded
+  console.log(g) //the captured values
+```
 
 ### And(subrules...)
 
@@ -92,10 +110,10 @@ var Integer = Text(Or('0', /^[1-9][0-9]*/), (str) => +str)
 
 ### Group(subrule, map?)
 
-capture any subgroups into a collection. If there are no subgroups,
-but the subrule matches, an empty array is returned.
+Capture any subgroups into a collection. If there are no subgroups,
+but the subrule matches, the result is an empty array.
 
-the optional map function will be applied to the groups as a whole.
+The optional map function will be applied to the groups as a whole.
 
 ## recursion
 
