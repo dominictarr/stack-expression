@@ -52,7 +52,7 @@ var output = [
 
 for(var i = 0; i < input.length; i++) {
   var g = []
-  var m = lisp(input[i], 0, input[i].length, g)
+  var m = lisp(input[i], 0, input[i].length, g.push.bind(g))
   console.error('test', i, input[i])
   equals(g[0], output[i])
 }

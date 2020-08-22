@@ -41,7 +41,7 @@ assert.equal(aCOMMAS('a,a,',0), 3)
 var aGROUPS = Join(Text(/^a/), /^,/)
 
 var g = []
-assert.equal(aGROUPS('a,a,a', 0, 5, g), 5)
+assert.equal(aGROUPS('a,a,a', 0, 5, g.push.bind(g)), 5)
 assert.deepEqual(g, ['a', 'a', 'a'])
 
 var abcSPACES = Join(/^[abc]+/, /^\s+/)
@@ -51,7 +51,7 @@ assert.equal(abcSPACES('aaa bbb   c',0), 11)
 
 function match(rule, input, matched, groups) {
   var g = []
-	var m = rule(input, 0, input.length, g)
+	var m = rule(input, 0, input.length, g.push.bind(g))
   assert.equal(m, matched)
   assert.deepEqual(g, groups)
 }
