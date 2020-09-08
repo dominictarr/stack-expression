@@ -13,7 +13,8 @@ var inputs = [
   1e+300,
   1.32e-123,
   {foo: 'bar'},
-  '"{\"foo\":\"bar\"}"'
+  '"{\"foo\":\"bar\"}"',
+  "foo\nbar"
 ]
 
 // console.log(
@@ -66,9 +67,6 @@ for(var i = 0; i < 10; i++) {
   }
   assert.equal(fail, false)
 }
-
-//  assert.deepEqual(json('[ ]', 0).groups[0], [])
-
 
 for(var k in inputs) {
   var str = JSON.stringify(inputs[k])
