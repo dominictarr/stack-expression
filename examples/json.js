@@ -18,7 +18,17 @@ var number = Text(And(decimal, Maybe(And('e', /^[+-]?/, non_zero_int))), Number)
 function join (ary) {
   return ary.join('')
 }
-var escaped = And('\\', Text(/^./)), unescaped = Text(/^[^"\n\\]+/)
+function toUnescape (x) {
+  return (
+    x === 'n' ? '\n'
+  : x === '\\' ? '\\'
+  : x === 't' ? '\t'
+  : x === 'r' ? '\r'
+  :             x
+  )
+}
+
+var escaped = And('\\', Text(/^./, toUnescape)), unescaped = Text(/^[^"\n\\]+/)
 var string = And('"', Group(Many(Or(escaped, unescaped)), join), Expect('"'))
 
 //note, matching unescaped string using "repeated non quote" because
