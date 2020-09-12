@@ -57,7 +57,7 @@ function Many (rule) {
   rule = toRule(rule)
   return function (input, start, end, groups) {
     var c = 0, m
-    while(~(m = rule(input, start + c, end, groups)))
+    while(start + c < end && ~(m = rule(input, start + c, end, groups)))
       c += m
     return c
   }
@@ -168,4 +168,4 @@ function EOF (input, start) {
   else return 0
 }
 
-module.exports = {And, Or, Empty, Maybe, Many, More, Join, Text, Group, Recurse, Fail, Log, Not, Peek, Expect, EOF}
+module.exports = {And, Or, Empty, Maybe, Many, More, Join, Text, Group, Recurse, Fail, Log, Not, Peek, Expect, EOF, toRule}
