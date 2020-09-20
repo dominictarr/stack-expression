@@ -208,8 +208,8 @@ But what about a way to get data out of our matched patterns?
 We don't just want to parse patterns, we want to get data out. Usually there is surrounding syntax
 that we don't actually care about, so we want to be explicit about what we capture.
 
-`group` is an array for collecting captures. `Text` takes a rule, and if it matches,
-it saves the matched text in the groups array.
+`group` is a function for collecting captures. `Text` takes a rule, and if it matches,
+it calls `group` with the matched text.
 (all the previous rules need to also add `group` argument, and pass it on to subrules)
 
 ``` js
@@ -217,7 +217,7 @@ function Text (rule) {
   rule = toRule(rule)
   return function (input, start, end, group) {
     var m = rule(input, start, end, group)
-    if(~m) group.push(input.substring(start, start + m))
+    if(~m) group(input.substring(start, start + m))
     return m
   }
 }
@@ -225,7 +225,7 @@ function Text (rule) {
 
 so `Text(More("A"))` matches a string of one or more `"A"` but also returns the text.
 
-for this to work, when we call the pattern, we must pass a `group` array, as well as
+for this to work, when we call the pattern, we must pass a `group` function, as well as
 a `start` and `end`.
 
 ``` js
@@ -237,33 +237,34 @@ console.log(g) => ['AAAAA']
 
 var word = Text(/^\w+/)
 var email = And(word, '@', word, '.', word) //for example, foo@bar.com
-var group2 = []
-email('foo@bar.com', 0, 11, group2)
-console.log(group2) // => ['foo', 'bar.com']
+var ary = []
+email('foo@bar.com', 0, 11, (s) => ary.push(s))
+console.log(ary) // => ['foo', 'bar.com']
 ```
-this mutates the `group` array, but we must return the number of matched chars,
-for everything else to work right, so this is simplest.
+
+We have passed in a `group` function that collects captured elements in an array.
 
 #### Group
 
 Regular expressions also has captures, marked with parentheses,
 but I'd always wished I could have nested groups. That's actually very easy to add.
 
-if we pass a different group array to a subrule, it's `Text` captures will be stored there.
-the `Group` rule captures captures. It can hold an array of text or an array of arrays.
+if we pass a different `group` function to a subrule, it's `Text` captures will be passed there.
+the `Group` rule captures captures. It can be nested recursively.
 
 ``` js
 function Group (rule) {
   return function (input, start, end, group) {
-    var subgroup = []
-    var m = rule(input, start, end, subgroup)
-    if(~m) group.push(subgroup)
+    var ary = []
+    var m = rule(input, start, end, (s)=>ary.push(s))
+    if(~m) group(ary)
     return m
   }
 }
 ```
+Any match on the subrule calls a function that appends to `ary`
+if the rule as a whole matches, then `group` is called with `ary`.
 
-If the rule does not match, then the subgroup is discarded.
 Now we could express structures that have a fixed level of nesting,
 such as CSV having rows and lines.
 
@@ -275,9 +276,9 @@ function Join(rule, separator) {
 var line = Group(Join(cell, ','))
 var CSV = Group(Join(line, '\n'))
 
-var g = []
-CSV('foo,bar,baz\n1,2,3', 0, 17, g)
-console.log(g) // => [['foo', 'bar', 'baz'], ['1','2','3']]
+var lines = []
+CSV('foo,bar,baz\n1,2,3', 0, 17, (line)=>lines.push(line))
+console.log(lines) // => [['foo', 'bar', 'baz'], ['1','2','3']]
 ```
 
 ## Recurse
