@@ -175,6 +175,30 @@ Remember to remove it from your code you ship.
 matches the end of the file.
 throws an error if it's Not the end of the end of the file.
 
+### Tail (head, tail, reduce(a, b) => [a,b])
+
+Express a pattern as a head+repeated tail, without a stack overflow.
+
+One limitation of `stack-expression` is that it doesn't have back-tracking so it can have a stack overflow
+if the prefix of a string is already a valid pattern.
+
+For example, a js style function invocation `a(b)` - that can also return a function,
+which of course can be immediately invoked `a(b)(c)` but just `a` is already good.
+
+``` 
+//this looks like it should work... but Maximum call stack size exceeded!!!
+Recurse((value) => Or(value, And(value, '(', value, ')', Text(/^\w+/))))```
+````
+however, a work around is to use tail to express this instead.
+A simple way to represent this is 
+
+```
+Recurse((value) => Tail(Text(/^\w+/), And('(', value, ')' )))
+```
+
+I started by implementing this pattern using `And(head, Many(tail))` but to make the expected
+output call pattern in the output data structure, I needed to reduce the matches so it looked
+like `[[a, b], c]` instead of `[a, b, c]` so I implemented Tail and included this.
 ## examples
 
 ### [JSON](./examples/json.js)
