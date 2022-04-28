@@ -168,8 +168,8 @@ function EOF (input, start=0) {
   else return 0
 }
 
-function Tail(head, tail, fn) {
-  return Group(And(head, Many(tail)), fn || (a => a.reduce((a,b)=>[a,b]))) 
+function Tail(head, tail, fn=(a,b)=>[a,b]) {
+  return Group(And(head, Many(tail)), a => a.reduce(fn)) 
 }
 
 module.exports = {And, Or, Empty, Maybe, Many, More, Join, Text, Group, Recurse, Fail, Log, Not, Peek, Expect, EOF, toRule, Tail}
