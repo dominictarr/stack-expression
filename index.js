@@ -1,5 +1,5 @@
 function Match (string) {
-  return function (input, start, end) {
+  return function (input, start=0, end=input.length) {
     return (
       end - start < string.length ? -1
     : input.startsWith(string, start) ? string.length
@@ -8,7 +8,7 @@ function Match (string) {
   }
 }
 function MatchRegexp (rule) {
-  return function (input, start, end) {
+  return function (input, start=0, end=input.length) {
     var m = rule.exec(input.substring(start, end))
     return m ? m[0].length : -1
   }
@@ -23,7 +23,7 @@ function toRule (r) {
 
 function And () {
   var args = [].map.call(arguments, toRule)
-  return function (input, start, end, groups) {
+  return function (input, start=0, end=input.length, groups) {
     var c = 0, m
     for(var i = 0; i < args.length; i++)
       if(~(m = args[i](input, start + c, end, groups))) {
@@ -37,7 +37,7 @@ function And () {
 
 function Or () {
   var args = [].map.call(arguments, toRule)
-  return function (input, start, end, groups) {
+  return function (input, start=0, end=input.length, groups) {
     var m
     for(var i = 0; i < args.length; i++) {
       if(~(m = args[i](input, start, end, groups))) {
@@ -55,7 +55,7 @@ const Maybe = function (a) {
 
 function Many (rule) {
   rule = toRule(rule)
-  return function (input, start, end, groups) {
+  return function (input, start=0, end=input.length, groups) {
     var c = 0, m
     while(start + c < end && ~(m = rule(input, start + c, end, groups)))
       c += m
@@ -73,7 +73,7 @@ function Join (a, separate) {
 
 function Recurse (create) {
   var rule
-  function wrapper (input, start, end, groups) {
+  function wrapper (input, start=0, end=input.length, groups) {
     return rule(input, start, end, groups)
   }
   rule = create(wrapper)
@@ -85,7 +85,7 @@ function id (e) { return e }
 
 function Text (rule, map) {
   rule = toRule(rule)
-  return function (input, start, end, groups) {
+  return function (input, start=0, end=input.length, groups) {
     var m
     if(~(m = rule(input, start, end, groups))) {
       groups((map || id)(input.substring(start, start + m)))
@@ -98,7 +98,7 @@ function Text (rule, map) {
 //so an empty group will remain an empty array.
 function Group (rule, map) {
   rule = toRule(rule)
-  return function (input, start, end, groups) {
+  return function (input, start=0, end=input.length, groups) {
     var ary = []
     var m
     if(~(m = rule(input, start, end, v => ary.push(v)))) {
@@ -125,7 +125,7 @@ function position (input, start) {
 }
 
 function Fail (message) {
-  return function (input, start, end) {
+  return function (input, start=0, end=input.length) {
     throw new Error(message+' but found:'+(start === end ? 'end of file' : position(input, start)))
   }
 }
@@ -137,7 +137,7 @@ function Expect (rule, message) {
 }
 
 function Log (rule, name) {
-  return function (input, start) {
+  return function (input, start=0) {
     console.log('<'+name, input.substring(start, start+20)+'...')
     var m = matches(rule, input, start)
     if(~m)
@@ -150,22 +150,26 @@ function Log (rule, name) {
 
 function Not (rule) {
   rule = toRule(rule)
-  return function (input, start) {
+  return function (input, start=0) {
     return ~rule(input, start) ? -1 : 0
   }
 }
 
 function Peek (rule) {
   rule = toRule(rule)
-  return function (input, start) {
+  return function (input, start=0) {
     return ~rule(input, start) ? 0 : -1
   }
 }
 
-function EOF (input, start) {
+function EOF (input, start=0) {
   if(start < input.length)
     throw new Error('expected end of file, found:'+position(input, start))
   else return 0
 }
 
-module.exports = {And, Or, Empty, Maybe, Many, More, Join, Text, Group, Recurse, Fail, Log, Not, Peek, Expect, EOF, toRule}
+function Tail(head, tail, fn) {
+  return Group(And(head, Many(tail)), fn || (a => a.reduce((a,b)=>[a,b]))) 
+}
+
+module.exports = {And, Or, Empty, Maybe, Many, More, Join, Text, Group, Recurse, Fail, Log, Not, Peek, Expect, EOF, toRule, Tail}
